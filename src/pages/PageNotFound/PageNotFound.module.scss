@@ -1,0 +1,23 @@
+.bg {
+  margin: 2.5rem;
+  padding: 2.5rem 5rem;
+  background-color: var(--color-dark--1);
+  min-height: calc(100vh - 5rem);
+}
+
+.container {
+  background-color: var(--color-dark--2);
+  border-radius: 7px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  text-align: center;
+  /* Different from other form */
+  width: 75%;
+  margin: 8rem auto;
+  padding: 5rem 10rem;
+
+  font-size: 5.2rem;
+  font-weight: 600;
+}
