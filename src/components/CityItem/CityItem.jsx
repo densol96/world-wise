@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import twemoji from 'twemoji';
+import { Link } from 'react-router-dom';
+import useEmojiParser from '../../helper/useEmojiParser';
 
 import styles from './CityItem.module.css';
 import './CityItem.css';
@@ -12,18 +12,23 @@ const formatDate = (date) =>
   }).format(new Date(date));
 
 function CityItem({ city }) {
-  const { cityName, emoji, date } = city;
+  const {
+    cityName: cityTitle,
+    emoji,
+    date,
+    position: { lat, lng },
+  } = city;
 
-  useEffect(() => {
-    twemoji.parse(document.body);
-  }, [emoji]);
+  useEmojiParser([]);
 
   return (
-    <li className={styles.cityItem}>
-      <span className={styles.emoji}>{emoji}</span>
-      <h3 className={styles.name}>{cityName}</h3>
-      <time className={styles.date}>{formatDate(date)}</time>
-      <button className={styles.deleteBtn}>&times;</button>
+    <li>
+      <Link to={`${city.id}?lat=${lat}&lng=${lng}`} className={styles.cityItem}>
+        <span className={styles.emoji}>{emoji}</span>
+        <h3 className={styles.name}>{cityTitle}</h3>
+        <time className={styles.date}>{formatDate(date)}</time>
+        <button className={styles.deleteBtn}>&times;</button>
+      </Link>
     </li>
   );
 }
