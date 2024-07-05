@@ -1,5 +1,7 @@
 import styles from "./CountryList.module.css";
 
+import { useCitiesContext } from "../contexts/CitiesContext";
+
 import Spinner from "./Spinner";
 import CityItem from "./CityItem";
 import CountryItem from "./CountryItem";
@@ -24,7 +26,9 @@ function citiesToCountries(cities) {
   return countries;
 }
 
-function CountryList({ cities, isLoading }) {
+function CountryList() {
+  const { cities, isLoading } = useCitiesContext();
+
   if (isLoading) return <Spinner />;
   if (cities.length === 0)
     return <Message message="Add your first city to the map" />;
