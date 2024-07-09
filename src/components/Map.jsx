@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import styles from "./Map.module.css";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   MapContainer,
   TileLayer,
@@ -9,16 +8,19 @@ import {
   Popup,
   useMapEvents,
 } from "react-leaflet";
+
+import styles from "./Map.module.css";
 import { useCitiesContext } from "../contexts/CitiesContext";
+import { useGeolocation } from "../hooks/useGeolocation";
+import { useUrlPosition } from "../hooks/useUrlPosition";
+import Button from "./Button";
 
 const DEFAULT_POSITION = [51.505, -0.09];
 const DEFAULT_ZOOM_OUT = 13;
 const DEFAULT_ZOOM_IN = 14;
 
 function Map() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const lat = searchParams.get("lat");
-  const lng = searchParams.get("lng");
+  const { lat, lng } = useUrlPosition();
 
   const navigate = useNavigate();
 
@@ -41,8 +43,26 @@ function Map() {
     }
   }, [lat, lng]);
 
+  // On first render, useGeButtonolocation to get user's current position
+  const {
+    isLoading: geoLocationIsLoading,
+    position: geoLocationPosition,
+    error,
+    getPosition,
+  } = useGeolocation();
+
+  useEffect(() => {
+    if (geoLocationPosition)
+      setMapPositon([geoLocationPosition.lat, geoLocationPosition.lng]);
+  }, [geoLocationPosition, error]);
+
   return (
     <div className={styles.mapContainer}>
+      {!geoLocationPosition && (
+        <Button type="position" onClick={(e) => getPosition()}>
+          {geoLocationIsLoading ? "Loading..." : "Use your position"}
+        </Button>
+      )}
       <MapContainer
         className={styles.map}
         center={mapPosition}

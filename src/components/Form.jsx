@@ -1,11 +1,14 @@
 // "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=0&longitude=0"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import styles from "./Form.module.css";
 import { useNavigate } from "react-router-dom";
 import Button from "./Button";
 import BackButton from "./BackButton";
+import { useUrlPosition } from "../hooks/useUrlPosition";
+import Message from "./Message";
+import Spinner from "./Spinner";
 
 export function convertToEmoji(countryCode) {
   const codePoints = countryCode
@@ -15,13 +18,44 @@ export function convertToEmoji(countryCode) {
   return String.fromCodePoint(...codePoints);
 }
 
+const BASE_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client";
+
 function Form() {
   const [cityName, setCityName] = useState("");
   const [country, setCountry] = useState("");
   const [date, setDate] = useState(new Date());
   const [notes, setNotes] = useState("");
+  const [emoji, setEmoji] = useState(null);
+
+  const [apiEndIsLoading, setApiEndIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
+  const { lat, lng } = useUrlPosition();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setApiEndIsLoading(true);
+        const response = await fetch(
+          `${BASE_URL}?latitude=${lat}&longitude=${lng}`
+        );
+        const data = await response.json();
+        setCityName(data.city);
+        setCountry(data.country);
+        setErrorMessage("");
+        setEmoji(convertToEmoji(data.countryCode));
+      } catch (e) {
+        setErrorMessage("Service is currently unavailable..");
+      } finally {
+        setApiEndIsLoading(false);
+      }
+    })();
+  }, [lat, lng]);
+
+  if (apiEndIsLoading) return <Spinner />;
+
+  if (errorMessage) return <Message>{errorMessage}</Message>;
 
   return (
     <form className={styles.form}>
