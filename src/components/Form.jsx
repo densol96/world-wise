@@ -9,6 +9,7 @@ import BackButton from "./BackButton";
 import { useUrlPosition } from "../hooks/useUrlPosition";
 import Message from "./Message";
 import Spinner from "./Spinner";
+import { useCitiesContext } from "../contexts/CitiesContext";
 
 export function convertToEmoji(countryCode) {
   const codePoints = countryCode
@@ -18,9 +19,21 @@ export function convertToEmoji(countryCode) {
   return String.fromCodePoint(...codePoints);
 }
 
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 const BASE_URL = "https://api.bigdatacloud.net/data/reverse-geocode-client";
 
 function Form() {
+  const { createCity, isLoading: submitingIsLoading } = useCitiesContext();
+
   const [cityName, setCityName] = useState("");
   const [country, setCountry] = useState("");
   const [date, setDate] = useState(new Date());
@@ -34,6 +47,7 @@ function Form() {
   const { lat, lng } = useUrlPosition();
 
   useEffect(() => {
+    if (!lat || !lng) return;
     (async () => {
       try {
         setApiEndIsLoading(true);
@@ -53,12 +67,37 @@ function Form() {
     })();
   }, [lat, lng]);
 
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!cityName || !date)
+      return alert("ALl the required field must be filled in");
+
+    const requestBody = {
+      cityName,
+      country,
+      emoji,
+      date,
+      notes,
+      position: { lat, lng },
+    };
+
+    await createCity(requestBody);
+    navigate("/app/cities");
+  }
+
   if (apiEndIsLoading) return <Spinner />;
 
   if (errorMessage) return <Message>{errorMessage}</Message>;
 
+  if (!lat || !lng) return <Message>Start by clicking on the page</Message>;
+
   return (
-    <form className={styles.form}>
+    <form
+      className={`${styles.form} ${submitingIsLoading ? styles.loading : ""}`}
+      onSubmit={(e) => {
+        handleSubmit(e);
+      }}
+    >
       <div className={styles.row}>
         <label htmlFor="cityName">City name</label>
         <input
@@ -66,15 +105,17 @@ function Form() {
           onChange={(e) => setCityName(e.target.value)}
           value={cityName}
         />
-        {/* <span className={styles.flag}>{emoji}</span> */}
+        <span className={styles.flag}>{emoji}</span>
       </div>
 
       <div className={styles.row}>
         <label htmlFor="date">When did you go to {cityName}?</label>
         <input
+          type="datetime-local"
+          max={formatDate(new Date())}
           id="date"
           onChange={(e) => setDate(e.target.value)}
-          value={date}
+          value={formatDate(new Date())}
         />
       </div>
 
@@ -88,7 +129,9 @@ function Form() {
       </div>
 
       <div className={styles.buttons}>
-        <Button type="primary">Add</Button>
+        <Button type="primary">
+          {!submitingIsLoading ? "Add" : "Loading.."}
+        </Button>
         <BackButton />
       </div>
     </form>
