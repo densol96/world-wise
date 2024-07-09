@@ -22,7 +22,7 @@ function Map() {
 
   const navigate = useNavigate();
 
-  const { cities, currentCity } = useCitiesContext();
+  const { cities } = useCitiesContext();
 
   const [mapPosition, setMapPositon] = useState(DEFAULT_POSITION);
   const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM_OUT);
