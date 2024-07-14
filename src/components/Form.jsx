@@ -56,7 +56,7 @@ function Form() {
         );
         const data = await response.json();
         setCityName(data.city);
-        setCountry(data.country);
+        setCountry(data.countryName);
         setErrorMessage("");
         setEmoji(convertToEmoji(data.countryCode));
       } catch (e) {
