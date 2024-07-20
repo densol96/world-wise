@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useReducer,
+  useCallback,
 } from "react";
 
 const CitiesContext = createContext();
@@ -74,7 +75,7 @@ function CitiesProvider({ children }) {
     })();
   }, []);
 
-  async function getCity(id) {
+  const getCity = useCallback(async function (id) {
     dispatch({ type: "loading" });
     try {
       const res = await fetch(`${BASE_URL}/cities/${id}`);
@@ -83,7 +84,7 @@ function CitiesProvider({ children }) {
     } catch (e) {
       dispatch({ type: "error" });
     }
-  }
+  }, []);
 
   async function createCity(city) {
     dispatch({ type: "loading" });
